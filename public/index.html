@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="jquery-1.12.0.min.js"></script>
+	<script type="text/javascript" src="dist/Chart.bundle.min.js"></script>
+	<style>
+		canvas{
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+		}
+	</style>
+	<script type="text/javascript">
+	$(document).ready(function(){
+		var d = [0];
+		var dd = [0];
+		var datosram = {
+			type: 'line',
+			data: {
+				labels: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+				datasets: [{
+					label: 'Utilizacion',
+					backgroundColor : "rgba(220,220,220,0.5)",
+					borderColor: "rgba(255,45,45,1)",
+					data: d,
+					fill: false,
+				}]
+			},
+			options: {
+				responsive: true,
+				title: {
+					display: true,
+					text: 'Porcentaje de RAM consumida'
+				},
+				scales: {
+					yAxes: [{
+						ticks: {
+							min: 0,
+							max: 100
+						}
+					}]
+				}
+			}
+		};
+		var datos = {
+			type: 'line',
+			data: {
+				labels: [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+				datasets: [{
+					label: 'Utilizacion',
+					backgroundColor : "rgba(220,220,220,0.5)",
+					borderColor: "rgba(255,45,45,1)",
+					data: d,
+					fill: false,
+				}]
+			},
+			options: {
+				responsive: true,
+				title: {
+					display: true,
+					text: 'Porcentaje de uso del CPU'
+				},
+				scales: {
+					yAxes: [{
+						ticks: {
+							min: 0,
+							max: 100
+						}
+					}]
+				}
+			}
+		};
+
+		var canvasram = document.getElementById('chartram').getContext('2d');
+		window.myLinex = new Chart(canvasram, datosram);
+
+		var canvas = document.getElementById('chart').getContext('2d');
+		window.myLine = new Chart(canvas, datos);
+
+		setInterval(function(){
+			
+			datosram.data.datasets.splice(0);
+			var newDataram = {
+				label: '%',
+				backgroundColor : "rgba(220,220,220,0.5)",
+				borderColor: "rgba(255,45,45,1)",
+				data: dd,
+				fill: false,
+			};
+
+			datosram.data.datasets.push(newDataram);
+
+			datos.data.datasets.splice(0);
+			var newData = {
+				label: '%',
+				backgroundColor : "rgba(220,220,220,0.5)",
+				borderColor: "rgba(255,45,45,1)",
+				data: d,
+				fill: false,
+			};
+
+			datos.data.datasets.push(newData);
+
+			window.myLinex.update();
+			window.myLine.update();
+
+		}, 5000);
+
+		
+		var socket = io.connect('http://localhost:8080');
+            socket.on('graph', function(porcentajeRAM ,porcentajeCPU, ramtotal, ramconsumida, ramconsumidaporcentaje){
+			dd = porcentajeRAM;
+			d = porcentajeCPU;
+			document.getElementById("WOW").innerHTML = porcentajeCPU[porcentajeCPU.length-1];
+			document.getElementById("id_ramtotal").innerHTML = ramtotal;
+			document.getElementById("id_ramconsumida").innerHTML = ramconsumida;
+			document.getElementById("id_ramconsumidaporcentaje").innerHTML = ramconsumidaporcentaje;
+        });
+
+	});
+	</script>
+</head>
+<body>
+		<h1><span  class="yellow">MONITOR DEL MEMORIA</pan></h1>
+		<h1><span id="WOW0" class="yellow">Total de memoria RAM (megas):</pan></h1>
+		<h1><span id="id_ramtotal" class="yellow">0</pan></h1>	
+		<h1><span id="WOW00" class="yellow">Total de memoria RAM consumida (megas):</pan></h1>
+		<h1><span id="id_ramconsumida" class="yellow">0</pan></h1>
+		<h1><span id="WOW000" class="yellow">Porcentaje consumido de RAM:</pan></h1>
+		<h1><span id="id_ramconsumidaporcentaje" class="yellow">0</pan></h1>		
+		<div id="canvas-container" style="width:80%;">
+			<canvas id="chartram" width="800" height="350"></canvas>
+		</div>		
+		<br>
+		<br>
+		<br>
+		<h1><span  class="yellow">MONITOR DEL CPU</pan></h1>
+		<h1><span id="WOW1" class="yellow">Porcentaje del CPU utilizado:</pan></h1>
+		<h1><span id="WOW" class="yellow">0</pan></h1>			
+		<div id="canvas-container" style="width:80%;">
+			<canvas id="chart" width="800" height="350"></canvas>
+		</div>
+	
+</body>
+</html>
